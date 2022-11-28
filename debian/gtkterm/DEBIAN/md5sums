@@ -1,0 +1,17 @@
+d367ccc9429c347a908029859852ab05  usr/bin/gtkterm
+9d862e6899df8b1b273f0eb236aa6e4b  usr/share/applications/gtkterm.desktop
+69d7fb62f7dbabe0f045b45dc1489a80  usr/share/doc/gtkterm/NEWS.gz
+54c123ad3b8e5e13d05bc44bc1653335  usr/share/doc/gtkterm/README.md
+65b05c52b4ec60feba7391ec95e13388  usr/share/doc/gtkterm/changelog.Debian.gz
+f9ecac806352d68f24931bc31821ee40  usr/share/doc/gtkterm/copyright
+7b55ed185a0316c34ec1f74850475a38  usr/share/icons/hicolor/128x128/apps/gtkterm.png
+0e82c0b527f7348ef034eb2d96317788  usr/share/icons/hicolor/256x256/apps/gtkterm.png
+101ad114cab0df3d30dffb403f80a6d0  usr/share/icons/hicolor/48x48/apps/gtkterm.png
+3e58f4413e958f870f9ac576471647ea  usr/share/icons/hicolor/64x64/apps/gtkterm.png
+5d9dd73b1f085438d36200bba34b3038  usr/share/locale/de/LC_MESSAGES/gtkterm.mo
+931a773144c9866b1e62fe251c825109  usr/share/locale/fr/LC_MESSAGES/gtkterm.mo
+f0cdc2f7c864c20f1cb0b0adebd6729c  usr/share/locale/hu/LC_MESSAGES/gtkterm.mo
+435bbe508155e7af289342bae7cc8b21  usr/share/locale/ru/LC_MESSAGES/gtkterm.mo
+7bcc95ef7861c1d639f1990d24bbf912  usr/share/locale/zh_CN/LC_MESSAGES/gtkterm.mo
+08fa654c189dfbdf3c042bc78774835c  usr/share/man/man1/gtkterm.1.gz
+a6799ca75d2938b734f46ad95e7b3af8  usr/share/pixmaps/gtkterm.png

@@ -1,0 +1,212 @@
+gtkterm (1.0.16-16+16ton) unstable; urgency=medium
+
+  * New upstream release.
+  * debian/rules
+    - switch to meson buildsystem.
+  * debian/control
+    - add build dependencies.
+    - switch to debhelper-compat.
+    - bump standards to 4.4.1. No changes needed.
+    - correct VCS-git link.
+    - add Rules-Requires-Root: no.
+  * debian/install
+    - icons are now in data directory.
+  * debian/docs
+    - remove TODO.
+  * debian/compat
+    - remove.
+
+ -- Willem van den Akker <wvdakker@wilsoft.nl>  Wed, 18 Dec 2019 17:38:00 +0100
+
+gtkterm (0.99.7+git9d63182-3) unstable; urgency=medium
+
+  * debian/control
+    - corrected mismatch standards-version with changelog.
+
+ -- Willem van den Akker <wvdakker@wilsoft.nl>  Tue, 10 Jul 2018 10:21:02 +0200
+
+gtkterm (0.99.7+git9d63182-2) unstable; urgency=medium
+
+  * debian/control
+    - VCS*: migrate to salsa.debian.org
+    - bump to standards-version 4.1.4
+  * Bump debhelper to 11.
+  * Fix FTBFS: Adapt to renamed README file (Closes: #903175).
+
+ -- Willem van den Akker <wvdakker@wilsoft.nl>  Mon, 9 Jul 2018 08:02:57 +0100
+
+gtkterm (0.99.7+git9d63182-1) unstable; urgency=low
+
+  * New maintainer (Closes: #857476).
+  * New upstream release (Closes: #601916).
+    - add Russian translation. Thanks to Sergey Alyoshin (Closes: #548945).
+    - add German translation. Thanks to Chris Leick (Closes: #574971).
+    - add more baudrates (Closes: #460747).
+    - migrate to GTK3 and vte-2.91 (Closes: #790177).
+  * debian/copyright
+    - add icon/*.png.
+    - make dep5.
+  * debian/control
+    - bump to standards-version 4.1.1.1.
+    - add Homepage field (Closes: #615330).
+  * debian/install
+    - add file.
+  * debian/gtkterm.desktop
+    - add icon.
+    - fix Menu entry (Closes: #400796).
+  * debian/rules
+    - migrate from cdbs to dh.
+  * debian/watch
+    - add file.
+
+ -- Willem van den Akker <wvdakker@wilsoft.nl>  Fri, 17 Nov 2017 17:31:28 +0100
+
+gtkterm (0.99.7~rc1-0.3) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Switch to debhelper compat level 10 (Closes: #817489).
+  * Remove the menu file.
+  * Add explicit debian/source/format.
+
+ -- Andrey Rahmatullin <wrar@debian.org>  Thu, 24 Nov 2016 01:13:00 +0500
+
+gtkterm (0.99.7~rc1-0.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * src/serie.c: Added use of "#ifdef __linux__".  Closes: #675835.  Patch by
+    Petr Salinger <Petr.Salinger@seznam.cz>.
+  * debian/copyright: Updated.
+
+ -- Bart Martens <bartm@debian.org>  Fri, 13 Jul 2012 06:17:16 +0000
+
+gtkterm (0.99.7~rc1-0.1) unstable; urgency=medium
+
+  * Non-Maintainer upload
+  * New upstream release
+    - fix "config.c:38:21: fatal error: vte/vte.h: No such file or directory"
+      (Closes: #634537)
+  * debian/control
+    - add "Build-Depends: intltool"
+
+ -- Hideki Yamane <henrich@debian.org>  Thu, 24 May 2012 08:23:44 +0900
+
+gtkterm (0.99.5-1) unstable; urgency=low
+
+  * New upstream version:
+    - Backspace key now works and sends \b.
+    - Print all messages in UTF8 format.
+    - Fixed segfault in case of local buffer overflow.
+    - Added hungarian translation
+    - Allow user to change the port manually to an unlisted port device
+      (Closes: #223825).
+    - Fix the build on GNU/KFreeBSD (Closes: #304855).
+
+ -- Sebastien Bacher <seb128@debian.org>  Mon, 14 Nov 2005 20:46:10 +0100
+
+gtkterm (0.99.4-2) unstable; urgency=low
+
+  * Added a GNOME menu entry (Closes: #210261).
+
+ -- Sebastien Bacher <seb128@debian.org>  Wed, 10 Sep 2003 23:10:52 +0200
+
+gtkterm (0.99.4-1) unstable; urgency=low
+
+  * New upstream release.
+    + gtkterm now uses a VTE widget (Closes: #202132).
+  * Switched to cdbs.
+  * Upgrade Standards-Version to 3.6.1.0.
+  * Update Build-Depends.
+
+ -- Sebastien Bacher <seb128@debian.org>  Sat,  6 Sep 2003 13:57:46 +0200
+
+gtkterm (0.99.3-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Sebastien Bacher <seb128@debian.org>  Sat, 19 Apr 2003 12:16:48 +0200
+
+gtkterm (0.99.2-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Sebastien Bacher <seb128@debian.org>  Tue, 11 Mar 2003 01:22:03 +0100
+
+gtkterm (0.99.1-2) unstable; urgency=low
+
+  * Updated to standards version 3.5.8.
+  * Updated to debhelper compatability level v4.
+  * Updated Description to add Author and Homepage.
+  * Added Depends on ${misc:Depends}.
+
+ -- Sebastien Bacher <seb128@debian.org>  Wed,  5 Mar 2003 01:26:46 +0100
+
+gtkterm (0.99.1-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Sebastien Bacher <seb128@debian.org>  Fri, 21 Feb 2003 20:39:30 +0100
+
+gtkterm (0.99.0-1) unstable; urgency=low
+
+  * New upstream release (Closes: #165852).
+
+ -- Sebastien Bacher <seb128@debian.org>  Sun, 16 Feb 2003 21:24:38 +0100
+
+gtkterm (0.98.5-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Sebastien Bacher <seb128@debian.org>  Wed,  5 Feb 2003 00:50:14 +0100
+
+gtkterm (0.98.4-3) unstable; urgency=low
+
+  * Change to a non-native packaging (Closes: #179266).
+
+ -- Sebastien Bacher <seb128@debian.org>  Sat,  1 Feb 2003 00:09:16 +0100
+
+gtkterm (0.98.4-2) unstable; urgency=low
+
+  * Try to close this strange FTBFS (Closes: #176527).
+
+ -- Sebastien Bacher <seb128@debian.org>  Sun, 26 Jan 2003 18:35:09 +0100
+
+gtkterm (0.98.4-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Sebastien Bacher <seb128@debian.org>  Sat, 11 Jan 2003 00:28:40 +0100
+
+gtkterm (0.98.3-2) unstable; urgency=low
+
+  * Some bugs fixed in upstream archive.
+
+ -- Sebastien Bacher <seb128@debian.org>  Sat, 11 Jan 2003 00:28:26 +0100
+
+gtkterm (0.98.3-1) unstable; urgency=low
+
+  * New upstream release.
+  * Updated to standards version 3.5.7.
+
+ -- Sebastien Bacher <seb128@debian.org>  Tue,  7 Jan 2003 23:32:42 +0100
+
+gtkterm (0.98.2-1) unstable; urgency=low
+
+  * New upstream release.
+  * Added local echo in configuration menu and in command line
+    (Closes: #165853).
+
+ -- Sebastien Bacher <seb128@debian.org>  Fri, 15 Nov 2002 01:25:08 +0100
+
+gtkterm (0.98.1-1) unstable; urgency=low
+
+  * New upstream release (closes: #161901, #161828, #161893, #161889).
+  * Updated depends for GTK+-2.0.
+  * Updated manpage.
+
+ -- Sebastien Bacher <seb128@debian.org>  Sun, 29 Sep 2002 14:38:21 +0200
+
+gtkterm (0.97-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Sebastien Bacher <seb128@debian.org>  Tue, 17 Sep 2002 15:59:09 +0200
