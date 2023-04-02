@@ -114,7 +114,7 @@ static gint bytes_per_line = 16;
 static gchar blank_data[128];
 static guint total_bytes;
 static gboolean show_index = FALSE;
-static guint virt_col_pos = 0;
+guint virt_col_pos = 0;
 
 /* Local functions prototype */
 void signals_send_break_callback(GtkAction *action, gpointer data);
@@ -161,6 +161,7 @@ const GtkActionEntry menu_entries[] =
 	/* File menu */
 	{"FileExit", GTK_STOCK_QUIT, NULL, "<shift><control>Q", NULL, gtk_main_quit},
 	{"ClearScreen", GTK_STOCK_CLEAR, N_("_Clear screen"), "<shift><control>L", NULL, G_CALLBACK(clear_buffer)},
+	{"ClearScrollback", GTK_STOCK_CLEAR, N_("_Clear scrollback"), "<shift><control>K", NULL, G_CALLBACK(clear_scrollback)},
 	{"SendFile", GTK_STOCK_JUMP_TO, N_("Send _RAW file"), "<shift><control>R", NULL, G_CALLBACK(send_raw_file)},
 	{"SaveFile", GTK_STOCK_SAVE_AS, N_("_Save RAW file"), "", NULL, G_CALLBACK(save_raw_file)},
 
@@ -229,6 +230,7 @@ static const char *ui_description =
     "  <menubar name='MenuBar'>"
     "    <menu action='File'>"
     "      <menuitem action='ClearScreen'/>"
+    "      <menuitem action='ClearScrollback'/>"
     "      <menuitem action='SendFile'/>"
     "      <menuitem action='SaveFile'/>"
     "      <separator/>"
@@ -774,16 +776,19 @@ void help_about_callback(GtkAction *action, gpointer data)
 {
 	gchar *authors[] = {"Julien Schimtt", "Zach Davis", "Florian Euchner", "Stephan Enderlein",
 			    "Kevin Picot", NULL};
+	gchar *comments_program = _("GTKTerm is a simple GTK+ terminal used to communicate with the serial port.");
+	gchar *comments[256];
 	GError *error = NULL;
 	GdkPixbuf *logo = NULL;
 
 	logo = gdk_pixbuf_new_from_resource ("/org/gtk/gtkterm/gtkterm_64x64.png", &error);
+	g_sprintf(comments, "%s\n\n%s", RELEASE_DATE, comments_program);;
 
 	gtk_show_about_dialog(GTK_WINDOW(Fenetre),
 	                      "program-name", "GTKTerm",
 	                      "logo", logo,
 	                      "version", VERSION,
-	                      "comments", _("Jun 2019\n\nGTKTerm is a simple GTK+ terminal used to communicate with the serial port."),
+	                      "comments", comments,
 	                      "copyright", "Copyright © Julien Schimtt",
 	                      "authors", authors,
 	                      "website", "https://github.com/Jeija/gtkterm",

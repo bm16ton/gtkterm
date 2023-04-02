@@ -1,4 +1,24 @@
-gtkterm (1.0.16-16+16ton) unstable; urgency=medium
+gtkterm (1.1.1-16) unstable; urgency=medium
+
+  * New upstream release;
+  * debian/control
+    - bump standards to 4.5.1. No changes needed.
+
+ -- Willem van den Akker <wvdakker@wilsoft.nl>  Thu, 03 Dec 2020 12:52:59 +0100
+
+gtkterm (1.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * debian/control
+    - switch from private to team repository.
+    - bump standards to 4.5.0. No changes needed.
+  * debian/copyright: add upstream maintainer to copyright file.
+  * debian/watch: fix for d.d releases.
+  * debian/gtkterm.desktop: Add X-AppStream-Ignore=true.
+
+ -- Willem van den Akker <wvdakker@wilsoft.nl>  Mon, 20 Jul 2020 13:11:39 +0200
+
+gtkterm (1.0.1-1) unstable; urgency=medium
 
   * New upstream release.
   * debian/rules

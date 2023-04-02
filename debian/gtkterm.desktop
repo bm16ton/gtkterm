@@ -9,3 +9,4 @@ Terminal=false
 Type=Application
 Icon=gtkterm.png
 Categories=GNOME;Application;Utility;
+X-AppStream-Ignore=true

@@ -1,3 +1,3 @@
 version=4
 opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/gtkterm-$1\.tar\.gz/ \
-  https://github.com/Jeija/gtkterm/tags .*/?(\d{1,2}\.\d{1,2}.\d{0,2})\.tar\.gz
+  https://github.com/Jeija/gtkterm/tags .*/?(\d{1,2}\.\d{1,2}(.\d{0,2}))*\.tar\.gz

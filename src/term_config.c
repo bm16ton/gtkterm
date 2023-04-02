@@ -44,7 +44,7 @@
 
 #include "serial.h"
 #include "term_config.h"
-#include "interface.h"f
+#include "interface.h"
 #include "parsecfg.h"
 #include "macros.h"
 #include "i18n.h"
@@ -200,8 +200,9 @@ void Config_Port_Fenetre(GtkAction *action, gpointer data)
 
 	if(liste == NULL)
 	{
-		show_message(_("No serial devices found!\n\n"
-		               "Searched the following paths:\n"
+		show_message(_("No serial devices found!\n"
+		               "\n"
+		               "Searched the following device path patterns:\n"
 		               "\t/dev/ttyS*\n\t/dev/tts/*\n\t/dev/ttyUSB*\n\t/dev/usb/tts/*\n\n"
 		               "Enter a different device path in the 'Port' box.\n"), MSG_WRN);
 	}
@@ -312,7 +313,7 @@ void Config_Port_Fenetre(GtkAction *action, gpointer data)
 		gtk_combo_box_set_active(GTK_COMBO_BOX(Combo), 8);
 		break;
 	case 74880:
-	    gtk_combo_box_set_active(GTK_COMBO_BOX(Combo), 8);
+	    gtk_combo_box_set_active(GTK_COMBO_BOX(Combo), 9);
 	    break;
 	case 115200:
 		gtk_combo_box_set_active(GTK_COMBO_BOX(Combo), 10);
@@ -468,7 +469,7 @@ void Config_Port_Fenetre(GtkAction *action, gpointer data)
 	Combos[7] = CheckBouton;
 
 
-	Frame = gtk_frame_new(_("RS485 half-duplex parameters (RTS signal used to send)"));
+	Frame = gtk_frame_new(_("RS-485 half-duplex parameters (RTS signal used to send)"));
 
 	gtk_container_add(GTK_CONTAINER(ExpanderVbox), Frame);
 
@@ -586,6 +587,11 @@ gint Grise_Degrise(GtkWidget *bouton, gpointer pointeur)
 		gtk_widget_set_sensitive(GTK_WIDGET(pointeur), TRUE);
 	}
 	return FALSE;
+}
+
+void clear_scrollback(void){
+    vte_terminal_set_scrollback_lines (VTE_TERMINAL(display), 0);
+    vte_terminal_set_scrollback_lines (VTE_TERMINAL(display), term_conf.scrollback);
 }
 
 void read_font_button(GtkFontButton *fontButton)

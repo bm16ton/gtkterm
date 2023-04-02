@@ -24,7 +24,7 @@
 #include "i18n.h"
 #include "serial.h"
 
-#include <config.h>'\n'
+#include <config.h>
 #include <glib/gi18n.h>
 #include <time.h>
 
@@ -37,6 +37,9 @@ static char *current_buffer;
 static unsigned int pointer;
 static int cr_received = 0;
 char overlapped;
+
+extern guint virt_col_pos;
+
 
 void (*write_func)(const char *, unsigned int) = NULL;
 void (*clear_func)(void) = NULL;
@@ -104,9 +107,9 @@ void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolea
 				{
 					/* If the previous character was a CR too, change to newline */
                     insert = 1;
-                    out_buffer[out_size] = '\n';
-
-					need_to_write_timestamp = 1;
+                   //out_buffer[out_size] = out_buffer[out_size + 1] ;
+                   //out_size++;
+					//need_to_write_timestamp = 1;
 				 	
 				}
 
@@ -117,10 +120,10 @@ void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolea
 				if (chars[i] == '\n')
 				{
 					/* If the previous character was a CR too, change to newline */
-                    insert2 = 1;
-                    out_buffer[out_size] = '\r';
-
-					need_to_write_timestamp = 1;
+                   insert2 = 1;
+                  //  out_buffer[out_size] = out_buffer[out_size + 1] ;;
+               //  out_size++;  
+				//	need_to_write_timestamp = 1;
 				 	
 				}
 
@@ -135,7 +138,7 @@ void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolea
 					{
 						out_buffer[out_size] = '\n';
 						out_size++;
-    					need_to_write_timestamp = 1;
+						need_to_write_timestamp = 1;
 					}
 					cr_received = 1;
 				}
@@ -164,7 +167,7 @@ void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolea
 					cr_received = 0;
 				}
 			} //if crlf_auto
-	
+
 			if(need_to_write_timestamp)
 			{
 				out_size += insert_timestamp(&out_buffer[out_size]);
@@ -178,12 +181,14 @@ void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolea
 
 			//copy each character to new buffer
 			if (insert == 1) {
-			    out_buffer[out_size] = '\n';
+			    out_buffer[out_size] = chars[i + 1];
 			    out_size++;
+			    i = i +1;
 			    insert = 0;
 			} else if (insert2 == 1) {
-			    out_buffer[out_size] = '\r';
+			    out_buffer[out_size] = chars[i + 1];
 			    out_size++;
+			    i = i +1;
 			    insert2 = 0;
 			} else {
 			out_buffer[out_size] = chars[i];
@@ -191,19 +196,19 @@ void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolea
             }
 		} // for
 
-		// set "incomming" data pointer to new buffer containing all normal and
+		// set "incoming" data pointer to new buffer containing all normal and
 		// converted newline characters
 		chars = out_buffer;
 		size = out_size;
 	} // if(crlf_auto || timestamp_on)
-		
+
 	if(buffer == NULL)
 	{
 		i18n_printf(_("ERROR : Buffer is not initialized !\n"));
 		return;
 	}
 
-	// when incomming size is larger than buffer, then just print the
+	// when incoming size is larger than buffer, then just print the
 	// last BUFFER_SIZE characters and ignore all other at begin of buffer
 	if(size > BUFFER_SIZE)
 	{
@@ -270,6 +275,8 @@ void clear_buffer(void)
 	current_buffer = buffer;
 	pointer = 0;
 	cr_received = 0;
+
+	virt_col_pos = 0;
 }
 
 void set_clear_func(void (*func)(void))

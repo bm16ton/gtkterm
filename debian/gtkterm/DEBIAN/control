@@ -1,5 +1,5 @@
 Package: gtkterm
-Version: 1.0.16-16+16ton
+Version: 1.1.1-16
 Architecture: arm64
 Maintainer: Willem van den Akker <wvdakker@wilsoft.nl>
 Installed-Size: 314
