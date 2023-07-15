@@ -182,12 +182,12 @@ void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolea
 			//copy each character to new buffer
 			if (insert == 1) {
 			    out_buffer[out_size] = chars[i + 1];
-			    out_size++;
+		//	    out_size++;
 			    i = i +1;
 			    insert = 0;
 			} else if (insert2 == 1) {
 			    out_buffer[out_size] = chars[i + 1];
-			    out_size++;
+	//		    out_size++;
 			    i = i +1;
 			    insert2 = 0;
 			} else {
