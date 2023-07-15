@@ -1,3 +1,12 @@
+gtkterm (1.1.2-16) unstable; urgency=medium
+
+  * New upstream release;
+    - switched custom baud method from deprecated spd to termios2
+    - added apply button to settings
+    - added two new options for line return/newline
+
+ -- Ben Maddocksr <bm16ton@gmail.com>  Sun, 03 Jul 2023 12:52:59 +0100
+
 gtkterm (1.1.1-16) unstable; urgency=medium
 
   * New upstream release;
