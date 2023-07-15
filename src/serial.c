@@ -34,7 +34,7 @@
 #include <string.h>
 #include <errno.h>
 #include <pwd.h>
-
+#include <termios2.h>
 #include "term_config.h"
 #include "serial.h"
 #include "interface.h"
@@ -433,7 +433,7 @@ void sendbreak(void)
 #ifdef HAVE_LINUX_SERIAL_H
 gint set_custom_speed(int speed, int port_fd)
 {
-
+/*
 	struct serial_struct ser;
 	int arby;
 
@@ -447,7 +447,19 @@ gint set_custom_speed(int speed, int port_fd)
 	ser.flags |= ASYNC_SPD_CUST;
 
 	ioctl(port_fd, TIOCSSERIAL, &ser);
-
+*/
+	 int fd = open(port_fd, O_RDONLY);
+    struct termios2 tio;
+    ioctl(fd, TCGETS2, &tio);
+    tio.c_cflag &= ~CBAUD;
+    tio.c_cflag |= BOTHER;
+    tio.c_ispeed = speed;
+    tio.c_ospeed = speed;
+    int r = ioctl(fd, TCSETS2, &tio);
+    close(fd);
+        if (r == 0) {
+        i18n_perror(_("Control signals read"));
+    }
 	return 0;
 }
 #endif
