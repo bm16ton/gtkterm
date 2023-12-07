@@ -90,6 +90,7 @@ gboolean timestamp_on = 0;
 GtkWidget *StatusBar;
 GtkWidget *signals[6];
 static GtkWidget *Hex_Box;
+static GtkWidget *Buff_Box;
 static GtkWidget *log_pause_resume_menu = NULL;
 static GtkWidget *log_start_menu = NULL;
 static GtkWidget *log_stop_menu = NULL;
@@ -134,8 +135,10 @@ void view_radio_callback(GtkAction *action, gpointer data);
 void view_hexadecimal_chars_radio_callback(GtkAction* action, gpointer data);
 void view_index_toggled_callback(GtkAction *action, gpointer data);
 void view_send_hex_toggled_callback(GtkAction *action, gpointer data);
+void view_send_buff_toggled_callback(GtkAction *action, gpointer data);
 void initialize_hexadecimal_display(void);
 gboolean Send_Hexadecimal(GtkWidget *, GdkEventKey *, gpointer);
+gboolean Send_buff(GtkWidget *, GdkEventKey *, gpointer);
 gboolean pop_message(void);
 static gchar *translate_menu(const gchar *, gpointer);
 static void Got_Input(VteTerminal *, gchar *, guint, gpointer);
@@ -207,7 +210,8 @@ const GtkToggleActionEntry menu_toggle_entries[] =
 
 	/* View Menu */
 	{"ViewIndex", NULL, N_("Show _index"), NULL, NULL, G_CALLBACK(view_index_toggled_callback), FALSE},
-	{"ViewSendHexData", NULL, N_("_Send hexadecimal data"), NULL, NULL, G_CALLBACK(view_send_hex_toggled_callback), FALSE}
+	{"ViewSendHexData", NULL, N_("_Send hexadecimal data"), NULL, NULL, G_CALLBACK(view_send_hex_toggled_callback), FALSE},
+	{"ViewSendbuffData", NULL, N_("_Send buffered data"), NULL, NULL, G_CALLBACK(view_send_buff_toggled_callback), FALSE}
 };
 
 const GtkRadioActionEntry menu_view_radio_entries[] =
@@ -283,6 +287,8 @@ static const char *ui_description =
     "      <menuitem action='ViewIndex'/>"
     "      <separator/>"
     "      <menuitem action='ViewSendHexData'/>"
+    "      <separator/>"
+    "      <menuitem action='ViewSendbuffData'/>"
     "    </menu>"
     "    <menu action='Help'>"
     "      <menuitem action='HelpAbout'/>"
@@ -308,6 +314,14 @@ void view_send_hex_toggled_callback(GtkAction *action, gpointer data)
 		gtk_widget_show(GTK_WIDGET(Hex_Box));
 	else
 		gtk_widget_hide(GTK_WIDGET(Hex_Box));
+}
+
+void view_send_buff_toggled_callback(GtkAction *action, gpointer data)
+{
+	if(gtk_toggle_action_get_active(GTK_TOGGLE_ACTION(action)))
+		gtk_widget_show(GTK_WIDGET(Buff_Box));
+	else
+		gtk_widget_hide(GTK_WIDGET(Buff_Box));
 }
 
 void view_index_toggled_callback(GtkAction *action, gpointer data)
@@ -513,6 +527,7 @@ void create_main_window(void)
 {
 	GtkWidget *menu, *main_vbox, *label;
 	GtkWidget *hex_send_entry;
+	GtkWidget *buff_send_entry;
 	GtkAccelGroup *accel_group;
 	GError *error;
 
@@ -622,6 +637,14 @@ void create_main_window(void)
 	gtk_box_pack_start(GTK_BOX(Hex_Box), hex_send_entry, TRUE, TRUE, 5);
 	gtk_box_pack_start(GTK_BOX(main_vbox), Hex_Box, FALSE, TRUE, 2);
 
+	Buff_Box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	label = gtk_label_new(_("buffered data to send"));
+	gtk_box_pack_start(GTK_BOX(Buff_Box), label, FALSE, FALSE, 5);
+	buff_send_entry = gtk_entry_new();
+	g_signal_connect(GTK_WIDGET(buff_send_entry), "activate", (GCallback)Send_buff, NULL);
+	gtk_box_pack_start(GTK_BOX(Buff_Box), buff_send_entry, TRUE, TRUE, 5);
+	gtk_box_pack_start(GTK_BOX(main_vbox), Buff_Box, FALSE, TRUE, 2);
+	
 	/* status bar */
 	StatusBar = gtk_statusbar_new();
 	gtk_box_pack_start(GTK_BOX(main_vbox), StatusBar, FALSE, FALSE, 0);
@@ -660,6 +683,7 @@ void create_main_window(void)
 	gtk_widget_show_all(Fenetre);
 	search_bar_hide(searchBar);
 	gtk_widget_hide(GTK_WIDGET(Hex_Box));
+	gtk_widget_hide(GTK_WIDGET(Buff_Box));
 }
 
 void initialize_hexadecimal_display(void)
@@ -963,6 +987,35 @@ gboolean Send_Hexadecimal(GtkWidget *widget, GdkEventKey *event, gpointer pointe
 	Put_temp_message(message, 2000);
 	gtk_entry_set_text(GTK_ENTRY(widget), "");
 	g_strfreev(tokens);
+
+	return FALSE;
+}
+
+gboolean Send_buff(GtkWidget *widget, GdkEventKey *event, gpointer pointer)
+{
+    
+	gchar *text, *message, *buff;
+
+	text = (gchar *)gtk_entry_get_text(GTK_ENTRY(widget));
+
+    buff = g_malloc(2);
+    buff[0] = '\n';
+    buff[1] = '\0';
+    
+	if(strlen(text) == 0)
+	{
+		message = g_strdup_printf(_("0 byte(s) sent!"));
+		Put_temp_message(message, 1500);
+		gtk_entry_set_text(GTK_ENTRY(widget), "");
+	}
+
+
+	send_serial(text, strlen(text));
+    send_serial(buff, 2);
+    
+	message = g_strdup_printf(_("%d byte(s) sent!"), strlen(text));
+	Put_temp_message(message, 2000);
+	gtk_entry_set_text(GTK_ENTRY(widget), "");
 
 	return FALSE;
 }

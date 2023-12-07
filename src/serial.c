@@ -433,7 +433,7 @@ void sendbreak(void)
 #ifdef HAVE_LINUX_SERIAL_H
 gint set_custom_speed(int speed, int port_fd)
 {
-/*
+
 	struct serial_struct ser;
 	int arby;
 
@@ -447,7 +447,8 @@ gint set_custom_speed(int speed, int port_fd)
 	ser.flags |= ASYNC_SPD_CUST;
 
 	ioctl(port_fd, TIOCSSERIAL, &ser);
-*/
+
+ /*
 	 int fd = open(port_fd, O_RDONLY);
     struct termios2 tio;
     ioctl(fd, TCGETS2, &tio);
@@ -460,6 +461,7 @@ gint set_custom_speed(int speed, int port_fd)
         if (r == 0) {
         i18n_perror(_("Control signals read"));
     }
+*/
 	return 0;
 }
 #endif

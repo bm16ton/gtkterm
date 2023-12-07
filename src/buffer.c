@@ -107,24 +107,21 @@ void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolea
 				{
 					/* If the previous character was a CR too, change to newline */
                     insert = 1;
-                   //out_buffer[out_size] = out_buffer[out_size + 1] ;
-                   //out_size++;
-					//need_to_write_timestamp = 1;
-				 	
+                    out_buffer[out_size] = '\n';
+					need_to_write_timestamp = 1;
+					out_size++;
 				}
 
 			} //if newline
-		
+
 	      if(creturn)
 			{
 				if (chars[i] == '\n')
 				{
 					/* If the previous character was a CR too, change to newline */
-                   insert2 = 1;
-                  //  out_buffer[out_size] = out_buffer[out_size + 1] ;;
-               //  out_size++;  
-				//	need_to_write_timestamp = 1;
-				 	
+                    insert2 = 1;
+					out_buffer[out_size] = '\r';
+					out_size++;
 				}
 
 			}  //if creturn
@@ -181,14 +178,14 @@ void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolea
 
 			//copy each character to new buffer
 			if (insert == 1) {
-			    out_buffer[out_size] = chars[i + 1];
+	//		    out_buffer[out_size] = chars[i + 1];
 		//	    out_size++;
-			    i = i +1;
+	//		    i = i +1;
 			    insert = 0;
 			} else if (insert2 == 1) {
-			    out_buffer[out_size] = chars[i + 1];
+	//		    out_buffer[out_size] = chars[i + 1];
 	//		    out_size++;
-			    i = i +1;
+	//		    i = i +1;
 			    insert2 = 0;
 			} else {
 			out_buffer[out_size] = chars[i];
