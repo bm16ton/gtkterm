@@ -998,9 +998,21 @@ gboolean Send_buff(GtkWidget *widget, GdkEventKey *event, gpointer pointer)
 
 	text = (gchar *)gtk_entry_get_text(GTK_ENTRY(widget));
 
+    
+    if (config.newline == 1) { 
     buff = g_malloc(2);
     buff[0] = '\n';
     buff[1] = '\0';
+    } else if (config.creturn == 1) {
+    buff = g_malloc(2);
+    buff[0] = '\r';
+    buff[1] = '\0';
+    } else if (config.crlfauto == 1) {
+    buff = g_malloc(3);
+    buff[0] = '\r';
+    buff[1] = '\n';
+    buff[1] = '\0';
+    }
     
 	if(strlen(text) == 0)
 	{
@@ -1011,7 +1023,13 @@ gboolean Send_buff(GtkWidget *widget, GdkEventKey *event, gpointer pointer)
 
 
 	send_serial(text, strlen(text));
+	if (config.crlfauto == 1) {
+    send_serial(buff, 3);
+    g_free(buff);
+    } else if (config.creturn == 1 || config.newline == 1) {
     send_serial(buff, 2);
+    g_free(buff);
+    }
     
 	message = g_strdup_printf(_("%d byte(s) sent!"), strlen(text));
 	Put_temp_message(message, 2000);
