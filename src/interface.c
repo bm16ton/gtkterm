@@ -407,7 +407,7 @@ void Set_crlfauto(gboolean crlfauto)
 	crlfauto_on = crlfauto;
 
 	action = gtk_action_group_get_action(action_group, "CRLFauto");
-	if(action)
+	if(action) 
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), crlfauto_on);
 }
 
@@ -418,7 +418,7 @@ void Set_newline(gboolean newline)
 	newline_on = newline;
 
 	action = gtk_action_group_get_action(action_group, "NEWLINE");
-	if(action)
+	if(action) 
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), newline_on);
 }
 
@@ -429,7 +429,7 @@ void Set_creturn(gboolean creturn)
 	creturn_on = creturn;
 
 	action = gtk_action_group_get_action(action_group, "CRETURN");
-	if(action)
+	if(action) 
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), creturn_on);
 }
 
@@ -437,18 +437,51 @@ void CR_LF_auto_toggled_callback(GtkAction *action, gpointer data)
 {
 	crlfauto_on = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION(action));
 	configure_crlfauto(crlfauto_on);
+	if (crlfauto_on == 1) {
+		action = gtk_action_group_get_action(action_group, "NEWLINE");
+	    gtk_action_set_sensitive(action, 0);
+	    action = gtk_action_group_get_action(action_group, "CRETURN");
+	    gtk_action_set_sensitive(action, 0);
+	    } else {
+	    action = gtk_action_group_get_action(action_group, "NEWLINE");
+	    gtk_action_set_sensitive(action, 1);
+	    action = gtk_action_group_get_action(action_group, "CRETURN");
+	    gtk_action_set_sensitive(action, 1);
+	    }
 }
 
 void NEWLINE_toggled_callback(GtkAction *action, gpointer data)
 {
 	newline_on = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION(action));
 	configure_newline(newline_on);
+	if (newline_on == 1) {
+		action = gtk_action_group_get_action(action_group, "CRLFauto");
+	    gtk_action_set_sensitive(action, 0);
+	    action = gtk_action_group_get_action(action_group, "CRETURN");
+	    gtk_action_set_sensitive(action, 0);
+	    } else {
+	    action = gtk_action_group_get_action(action_group, "CRLFauto");
+	    gtk_action_set_sensitive(action, 1);
+	    action = gtk_action_group_get_action(action_group, "CRETURN");
+	    gtk_action_set_sensitive(action, 1);
+	    }
 }
 
 void CRETURN_toggled_callback(GtkAction *action, gpointer data)
 {
 	creturn_on = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION(action));
 	configure_creturn(creturn_on);
+	if (creturn_on == 1) {
+		action = gtk_action_group_get_action(action_group, "CRLFauto");
+	    gtk_action_set_sensitive(action, 0);
+	    action = gtk_action_group_get_action(action_group, "NEWLINE");
+	    gtk_action_set_sensitive(action, 0);
+	    } else {
+	    action = gtk_action_group_get_action(action_group, "CRLFauto");
+	    gtk_action_set_sensitive(action, 1);
+	    action = gtk_action_group_get_action(action_group, "NEWLINE");
+	    gtk_action_set_sensitive(action, 1);
+	    }
 }
 
 void Set_timestamp(gboolean timestamp)

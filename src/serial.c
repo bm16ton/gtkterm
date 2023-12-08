@@ -316,16 +316,28 @@ void configure_echo(gboolean echo)
 void configure_crlfauto(gboolean crlfauto)
 {
 	config.crlfauto = crlfauto;
+	if (config.crlfauto == 1) {
+	config.creturn = 0;
+	config.newline = 0;
+	}
 }
 
 void configure_newline(gboolean newline)
 {
 	config.newline = newline;
+	if (config.newline == 1) {
+	config.creturn = 0;
+	config.crlfauto = 0;
+	}
 }
 
 void configure_creturn(gboolean creturn)
 {
 	config.creturn = creturn;
+	if (config.creturn == 1) {
+	config.newline = 0;
+	config.crlfauto = 0;
+	}
 }
 
 void Close_port(void)
