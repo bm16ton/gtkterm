@@ -87,6 +87,7 @@ gboolean crlfauto_on;
 gboolean newline_on;
 gboolean creturn_on;
 gboolean timestamp_on = 0;
+gboolean noctrlsig = 0;
 GtkWidget *StatusBar;
 GtkWidget *signals[6];
 static GtkWidget *Hex_Box;
@@ -121,6 +122,7 @@ guint virt_col_pos = 0;
 void signals_send_break_callback(GtkAction *action, gpointer data);
 void signals_toggle_DTR_callback(GtkAction *action, gpointer data);
 void signals_toggle_RTS_callback(GtkAction *action, gpointer data);
+void signals_disable_ctrl_signals_callback(GtkAction *action, gpointer data);
 void signals_close_port(GtkAction *action, gpointer data);
 void signals_open_port(GtkAction *action, gpointer data);
 void help_about_callback(GtkAction *action, gpointer data);
@@ -194,6 +196,7 @@ const GtkActionEntry menu_entries[] =
 	{"SignalsClosePort", GTK_STOCK_CLOSE, N_("_Close Port"), "F6", NULL, G_CALLBACK(signals_close_port)},
 	{"SignalsDTR", NULL, N_("Toggle DTR"), "F7", NULL, G_CALLBACK(signals_toggle_DTR_callback)},
 	{"SignalsRTS", NULL, N_("Toggle RTS"), "F8", NULL, G_CALLBACK(signals_toggle_RTS_callback)},
+	{"SignalsNOctrlSig", NULL, N_("Disable ctrl sigs"), "F9", NULL, G_CALLBACK(signals_disable_ctrl_signals_callback)},
 
 	/* About menu */
 	{"HelpAbout", GTK_STOCK_ABOUT, NULL, NULL, NULL, G_CALLBACK(help_about_callback)}
@@ -273,6 +276,7 @@ static const char *ui_description =
     "      <menuitem action='SignalsClosePort'/>"
     "      <menuitem action='SignalsDTR'/>"
     "      <menuitem action='SignalsRTS'/>"
+    "      <menuitem action='SignalsNOctrlSig'/>"
     "    </menu>"
     "    <menu action='View'>"
     "      <menuitem action='ViewASCII'/>"
@@ -407,7 +411,7 @@ void Set_crlfauto(gboolean crlfauto)
 	crlfauto_on = crlfauto;
 
 	action = gtk_action_group_get_action(action_group, "CRLFauto");
-	if(action) 
+	if(action)
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), crlfauto_on);
 }
 
@@ -418,7 +422,7 @@ void Set_newline(gboolean newline)
 	newline_on = newline;
 
 	action = gtk_action_group_get_action(action_group, "NEWLINE");
-	if(action) 
+	if(action)
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), newline_on);
 }
 
@@ -429,7 +433,7 @@ void Set_creturn(gboolean creturn)
 	creturn_on = creturn;
 
 	action = gtk_action_group_get_action(action_group, "CRETURN");
-	if(action) 
+	if(action)
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), creturn_on);
 }
 
@@ -677,7 +681,7 @@ void create_main_window(void)
 	g_signal_connect(GTK_WIDGET(buff_send_entry), "activate", (GCallback)Send_buff, NULL);
 	gtk_box_pack_start(GTK_BOX(Buff_Box), buff_send_entry, TRUE, TRUE, 5);
 	gtk_box_pack_start(GTK_BOX(main_vbox), Buff_Box, FALSE, TRUE, 2);
-	
+
 	/* status bar */
 	StatusBar = gtk_statusbar_new();
 	gtk_box_pack_start(GTK_BOX(main_vbox), StatusBar, FALSE, FALSE, 0);
@@ -898,6 +902,16 @@ void signals_toggle_RTS_callback(GtkAction *action, gpointer data)
 	Set_signals(1);
 }
 
+void signals_disable_ctrl_signals_callback(GtkAction *action, gpointer data)
+{
+	if(noctrlsig == 0) {
+	noctrlsig = 1;
+	} else if(noctrlsig == 1) {
+	noctrlsig = 0;
+	}
+	Set_signals(1);
+}
+
 void signals_close_port(GtkAction *action, gpointer data)
 {
 	interface_close_port();
@@ -912,9 +926,11 @@ gboolean control_signals_read(void)
 {
 	int state;
 
+	if(noctrlsig == 0) {
 	state = lis_sig();
 	if(state >= 0)
 		show_control_signals(state);
+	}
 
 	return TRUE;
 }
@@ -1026,13 +1042,13 @@ gboolean Send_Hexadecimal(GtkWidget *widget, GdkEventKey *event, gpointer pointe
 
 gboolean Send_buff(GtkWidget *widget, GdkEventKey *event, gpointer pointer)
 {
-    
+
 	gchar *text, *message, *buff;
 
 	text = (gchar *)gtk_entry_get_text(GTK_ENTRY(widget));
 
-    
-    if (config.newline == 1) { 
+
+    if (config.newline == 1) {
     buff = g_malloc(2);
     buff[0] = '\n';
     buff[1] = '\0';
@@ -1044,9 +1060,9 @@ gboolean Send_buff(GtkWidget *widget, GdkEventKey *event, gpointer pointer)
     buff = g_malloc(3);
     buff[0] = '\r';
     buff[1] = '\n';
-    buff[1] = '\0';
+    buff[2] = '\0';
     }
-    
+
 	if(strlen(text) == 0)
 	{
 		message = g_strdup_printf(_("0 byte(s) sent!"));
@@ -1063,7 +1079,7 @@ gboolean Send_buff(GtkWidget *widget, GdkEventKey *event, gpointer pointer)
     send_serial(buff, 2);
     g_free(buff);
     }
-    
+
 	message = g_strdup_printf(_("%d byte(s) sent!"), strlen(text));
 	Put_temp_message(message, 2000);
 	gtk_entry_set_text(GTK_ENTRY(widget), "");
