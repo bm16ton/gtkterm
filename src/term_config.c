@@ -1244,7 +1244,7 @@ void Hard_default_configuration(void)
 	config.crlfauto = FALSE;
 	config.newline = FALSE;
 	config.creturn = FALSE;
-	config.autoreconnect_enabled = FALSE;
+	config.autoreconnect_enabled = TRUE;
 	config.esc_clear_screen = FALSE;
 	config.timestamp = FALSE;
   config.disable_port_lock = FALSE;

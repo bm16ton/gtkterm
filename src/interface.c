@@ -85,7 +85,7 @@
 
 guint id;
 gboolean echo_on;
-gboolean autoreconnect_on;
+gboolean autoreconnect_on = 1;
 gboolean crlfauto_on;
 gboolean esc_clear_screen_on;
 gboolean newline_on;
@@ -214,7 +214,7 @@ const GtkToggleActionEntry menu_toggle_entries[] =
 {
 	/* Configuration Menu */
 	{"LocalEcho", NULL, N_("Local _echo"), NULL, NULL, G_CALLBACK(echo_toggled_callback), FALSE},
-	{"Autoreconnect", NULL, N_("Autoreconnect"), NULL, NULL, G_CALLBACK(Autoreconnect_toggled_callback), FALSE},
+	{"Autoreconnect", NULL, N_("Autoreconnect"), NULL, NULL, G_CALLBACK(Autoreconnect_toggled_callback), TRUE},
 	{"CRLFauto", NULL, N_("_CR LF auto"), NULL, NULL, G_CALLBACK(CR_LF_auto_toggled_callback), FALSE},
 	{"NEWLINE", NULL, N_("_NEWLINE"), NULL, NULL, G_CALLBACK(NEWLINE_toggled_callback), FALSE},
 	{"CRETURN", NULL, N_("CRETURN"), NULL, NULL, G_CALLBACK(CRETURN_toggled_callback), FALSE},
