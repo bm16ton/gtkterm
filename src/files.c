@@ -65,7 +65,7 @@ gboolean timer(gpointer pointer);
 gboolean idle(gpointer pointer);
 void remove_input(void);
 void add_input(void);
-void write_file(char *, unsigned int);
+void write_file(const char *, unsigned int);
 
 extern struct configuration_port config;
 
@@ -107,7 +107,7 @@ void send_raw_file(GtkAction *action, gpointer data)
 			GtkWidget *Bouton_annuler, *Box;
 
 			fic_defaut = g_strdup(fileName);
-			msg = g_strdup_printf(_("%s : transfer in progress..."), fileName);
+			msg = g_strdup_printf(_("%s: transfer in progress..."), fileName);
 
 			gtk_statusbar_push(GTK_STATUSBAR(StatusBar), id, msg);
 			car_written = 0;
@@ -280,10 +280,29 @@ gint close_all(void)
 	return FALSE;
 }
 
-void write_file(char *data, unsigned int size)
+void write_file(const char *data, unsigned int size)
 {
 	fwrite(data, size, 1, Fic);
 }
+
+void write_ascii_file(const char *data, unsigned int size)
+{
+        char *cleanbuff = g_malloc(size);
+        int write_pointer=0;
+        int newsize=0;
+        for (int x=0; x<size; ++x)
+        {
+          if (data[x] > 0x1F || data[x]==0x0A || data[x]==0x0D)
+          {
+            cleanbuff[write_pointer++]=data[x];
+            newsize++;
+          }
+        }
+        fwrite(cleanbuff, newsize, 1, Fic);
+        g_free(cleanbuff);
+}
+
+
 
 void save_raw_file(GtkAction *action, gpointer data)
 {
@@ -328,6 +347,57 @@ void save_raw_file(GtkAction *action, gpointer data)
 			fic_defaut = g_strdup(fileName);
 
 			write_buffer_with_func(write_file);
+
+			fclose(Fic);
+		}
+		g_free(fileName);
+	}
+	gtk_widget_destroy(file_select);
+}
+
+void save_ascii_file(GtkAction *action, gpointer data)
+{
+	GtkWidget *file_select;
+
+	file_select = gtk_file_chooser_dialog_new(_("Save ASCII File"),
+	              GTK_WINDOW(Fenetre),
+	              GTK_FILE_CHOOSER_ACTION_SAVE,
+	              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+	              GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+	              NULL);
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(file_select), TRUE);
+
+	if(fic_defaut != NULL)
+		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(file_select), fic_defaut);
+
+	if(gtk_dialog_run(GTK_DIALOG(file_select)) == GTK_RESPONSE_ACCEPT)
+	{
+		gchar *fileName;
+		gchar *msg;
+
+		fileName = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(file_select));
+		if ((!fileName || (strcmp(fileName, ""))) == 0)
+		{
+			msg = g_strdup_printf(_("File error\n"));
+			show_message(msg, MSG_ERR);
+			g_free(msg);
+			g_free(fileName);
+			gtk_widget_destroy(file_select);
+			return;
+		}
+
+		Fic = fopen(fileName, "w");
+		if(Fic == NULL)
+		{
+			msg = g_strdup_printf(_("Cannot open file %s: %s\n"), fileName, strerror(errno));
+			show_message(msg, MSG_ERR);
+			g_free(msg);
+		}
+		else
+		{
+			fic_defaut = g_strdup(fileName);
+
+			write_buffer_with_func(write_ascii_file);
 
 			fclose(Fic);
 		}

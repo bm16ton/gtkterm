@@ -71,7 +71,7 @@ gboolean Lis_port(GIOChannel* src, GIOCondition cond, gpointer data)
 		bytes_read = read(serial_port_fd, c, BUFFER_RECEPTION);
 		if(bytes_read > 0)
 		{
-			put_chars(c, bytes_read, config.crlfauto, config.newline, config.creturn);
+			put_chars(c, bytes_read, config.crlfauto, config.esc_clear_screen, config.newline, config.creturn);
 
 			if(config.car != -1 && waiting_for_char == TRUE)
 			{
@@ -222,6 +222,9 @@ gboolean Config_port(void)
 	case 1000000:
 		termios_p.c_cflag = B1000000;
 		break;
+	case 1500000:
+		termios_p.c_cflag = B1500000;
+		break;
 	case 2000000:
 		termios_p.c_cflag = B2000000;
 		break;
@@ -322,6 +325,16 @@ void configure_crlfauto(gboolean crlfauto)
 	}
 }
 
+void configure_autoreconnect_enable(gboolean autoreconnect)
+{
+	config.autoreconnect_enabled = autoreconnect;
+}
+
+void configure_esc_clear_screen(gboolean esc_clear_screen)
+{
+	config.esc_clear_screen = esc_clear_screen;
+}
+
 void configure_newline(gboolean newline)
 {
 	config.newline = newline;
@@ -339,6 +352,7 @@ void configure_creturn(gboolean creturn)
 	config.crlfauto = 0;
 	}
 }
+
 
 void Close_port(void)
 {
@@ -371,7 +385,7 @@ void Set_signals(guint param)
 
 	if(ioctl(serial_port_fd, TIOCMGET, &stat_) == -1)
 	{
-		i18n_perror(_("Set_signals Control signals read"));
+		i18n_perror(_("Control signals read set signals"));
 		return;
 	}
 
@@ -417,9 +431,8 @@ int lis_sig(void)
 			/* Thanks to Elie De Brauwer on ubuntu launchpad */
 			if (errno != EINVAL)
 			{
-				i18n_perror(_("lis_sig Control signals read"));
+				i18n_perror(_("Control signals read lis_sig"));
 				Close_port();
-//				return 0;
 			}
 
 			return -2;

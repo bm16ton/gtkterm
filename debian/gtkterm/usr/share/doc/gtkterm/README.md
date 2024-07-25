@@ -18,10 +18,14 @@ Key Combination | Effect
 ---:|---
 `<ctrl><shift>L` | Clear screen
 `<ctrl><shift>R` | Send file
-`<ctrl><shift>Q` | Quit 
+`<ctrl><shift>Q` | Quit
 `<ctrl><shift>S` | Configure port
 `<ctrl><shift>V` | Paste
 `<ctrl><shift>C` | Copy
+`<ctrl><shift>F` | Find
+`<ctrl><shift>K` | Clear Scrollback
+`<ctrl><shift>A` | Select All
+`<ctrl><shift>B` | Send Break
 `<ctrl>B` | Send break
 F5 | Open Port
 F6 | Close Port
@@ -66,6 +70,13 @@ If you wish to install GTKTerm someplace other than the default directory, e.g. 
 	meson build -Dprefix=/usr
 
 Then build and install as usual.
+
+## Uninstallation
+To uninstall GTKTerm, run:
+
+	ninja -C build uninstall
+
+If you already deleted the `build` directory, just compile and install GTKTerm again as explained in the [previous section](#installation) with the same target location prefix (`-Dprefix`) and perform the uninstall step afterwards.
 
 ## License
 Original Code by: Julien Schmitt

@@ -1,13 +1,13 @@
 Package: gtkterm-dbgsym
 Package-Type: ddeb
 Source: gtkterm
-Version: 1.1.5-16
+Version: 1.3.1-1
 Auto-Built-Package: debug-symbols
 Architecture: amd64
 Maintainer: Willem van den Akker <wvdakker@wilsoft.nl>
-Installed-Size: 167
-Depends: gtkterm (= 1.1.5-16)
+Installed-Size: 168
+Depends: gtkterm (= 1.3.1-1)
 Section: debug
 Priority: optional
 Description: debug symbols for gtkterm
-Build-Ids: 936fe9a4e6d09dccc802d379d404c3f162979ce2
+Build-Ids: 60c0375526c41abb95d1caad476d642a808efb55

@@ -77,17 +77,21 @@
 #include "macros.h"
 #include "auto_config.h"
 #include "logging.h"
+#include "device_monitor.h"
 
 #include <config.h>
+#include <glib/gprintf.h>
 #include <glib/gi18n.h>
 
 guint id;
 gboolean echo_on;
+gboolean autoreconnect_on;
 gboolean crlfauto_on;
+gboolean esc_clear_screen_on;
 gboolean newline_on;
 gboolean creturn_on;
-gboolean timestamp_on = 0;
 gboolean noctrlsig = 0;
+gboolean timestamp_on = 0;
 GtkWidget *StatusBar;
 GtkWidget *signals[6];
 static GtkWidget *Hex_Box;
@@ -129,7 +133,9 @@ void help_about_callback(GtkAction *action, gpointer data);
 gboolean Envoie_car(GtkWidget *, GdkEventKey *, gpointer);
 gboolean control_signals_read(void);
 void echo_toggled_callback(GtkAction *action, gpointer data);
+void Autoreconnect_toggled_callback(GtkAction *action, gpointer data);
 void CR_LF_auto_toggled_callback(GtkAction *action, gpointer data);
+void esc_clear_screen_toggled_callback(GtkAction *action, gpointer data);
 void NEWLINE_toggled_callback(GtkAction *action, gpointer data);
 void CRETURN_toggled_callback(GtkAction *action, gpointer data);
 void timestamp_toggled_callback(GtkAction *action, gpointer data);
@@ -138,6 +144,7 @@ void view_hexadecimal_chars_radio_callback(GtkAction* action, gpointer data);
 void view_index_toggled_callback(GtkAction *action, gpointer data);
 void view_send_hex_toggled_callback(GtkAction *action, gpointer data);
 void view_send_buff_toggled_callback(GtkAction *action, gpointer data);
+
 void initialize_hexadecimal_display(void);
 gboolean Send_Hexadecimal(GtkWidget *, GdkEventKey *, gpointer);
 gboolean Send_buff(GtkWidget *, GdkEventKey *, gpointer);
@@ -169,6 +176,7 @@ const GtkActionEntry menu_entries[] =
 	{"ClearScrollback", GTK_STOCK_CLEAR, N_("_Clear scrollback"), "<shift><control>K", NULL, G_CALLBACK(clear_scrollback)},
 	{"SendFile", GTK_STOCK_JUMP_TO, N_("Send _RAW file"), "<shift><control>R", NULL, G_CALLBACK(send_raw_file)},
 	{"SaveFile", GTK_STOCK_SAVE_AS, N_("_Save RAW file"), "", NULL, G_CALLBACK(save_raw_file)},
+        {"SaveAsciiFile", GTK_STOCK_SAVE_AS, N_("Save _ASCII file"), "", NULL, G_CALLBACK(save_ascii_file)},
 
 	/* Edit menu */
 	{"EditCopy", GTK_STOCK_COPY, NULL, "<shift><control>C", NULL, G_CALLBACK(edit_copy_callback)},
@@ -206,9 +214,11 @@ const GtkToggleActionEntry menu_toggle_entries[] =
 {
 	/* Configuration Menu */
 	{"LocalEcho", NULL, N_("Local _echo"), NULL, NULL, G_CALLBACK(echo_toggled_callback), FALSE},
+	{"Autoreconnect", NULL, N_("Autoreconnect"), NULL, NULL, G_CALLBACK(Autoreconnect_toggled_callback), FALSE},
 	{"CRLFauto", NULL, N_("_CR LF auto"), NULL, NULL, G_CALLBACK(CR_LF_auto_toggled_callback), FALSE},
 	{"NEWLINE", NULL, N_("_NEWLINE"), NULL, NULL, G_CALLBACK(NEWLINE_toggled_callback), FALSE},
 	{"CRETURN", NULL, N_("CRETURN"), NULL, NULL, G_CALLBACK(CRETURN_toggled_callback), FALSE},
+	{"EscClearScreen", NULL, N_("ESC clear scree_n"), NULL, NULL, G_CALLBACK(esc_clear_screen_toggled_callback), FALSE},
 	{"Timestamp", NULL, N_("Timestamp"), NULL, NULL, G_CALLBACK(timestamp_toggled_callback), FALSE},
 
 	/* View Menu */
@@ -240,6 +250,7 @@ static const char *ui_description =
     "      <menuitem action='ClearScrollback'/>"
     "      <menuitem action='SendFile'/>"
     "      <menuitem action='SaveFile'/>"
+    "      <menuitem action='SaveAsciiFile'/>"
     "      <separator/>"
     "      <menuitem action='FileExit'/>"
     "    </menu>"
@@ -260,7 +271,9 @@ static const char *ui_description =
     "      <menuitem action='ConfigPort'/>"
     "      <menuitem action='ConfigTerminal'/>"
     "      <menuitem action='LocalEcho'/>"
+    "      <menuitem action='Autoreconnect'/>"
     "      <menuitem action='CRLFauto'/>"
+    "      <menuitem action='EscClearScreen'/>"
     "      <menuitem action='NEWLINE'/>"
     "      <menuitem action='CRETURN'/>"
     "      <menuitem action='Timestamp'/>"
@@ -415,6 +428,23 @@ void Set_crlfauto(gboolean crlfauto)
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), crlfauto_on);
 }
 
+void Set_autoreconnect_enabled(gboolean autoreconnect_enabled)
+{
+	GtkAction *action;
+
+	autoreconnect_on = autoreconnect_enabled;
+
+	action = gtk_action_group_get_action(action_group, "Autoreconnect");
+	if(action)
+		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), autoreconnect_on);
+}
+
+void Autoreconnect_toggled_callback(GtkAction *action, gpointer data)
+{
+	autoreconnect_on = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION(action));
+	configure_autoreconnect_enable(autoreconnect_on);
+}
+
 void Set_newline(gboolean newline)
 {
 	GtkAction *action;
@@ -437,6 +467,7 @@ void Set_creturn(gboolean creturn)
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), creturn_on);
 }
 
+
 void CR_LF_auto_toggled_callback(GtkAction *action, gpointer data)
 {
 	crlfauto_on = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION(action));
@@ -452,6 +483,23 @@ void CR_LF_auto_toggled_callback(GtkAction *action, gpointer data)
 	    action = gtk_action_group_get_action(action_group, "CRETURN");
 	    gtk_action_set_sensitive(action, 1);
 	    }
+}
+
+void Set_esc_clear_screen(gboolean esc_clear_screen)
+{
+	GtkAction *action;
+
+	esc_clear_screen_on = esc_clear_screen;
+
+	action = gtk_action_group_get_action(action_group, "EscClearScreen");
+	if(action)
+		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), esc_clear_screen_on);
+}
+
+void esc_clear_screen_toggled_callback(GtkAction *action, gpointer data)
+{
+	esc_clear_screen_on = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION(action));
+	configure_esc_clear_screen(esc_clear_screen_on);
 }
 
 void NEWLINE_toggled_callback(GtkAction *action, gpointer data)
@@ -487,6 +535,7 @@ void CRETURN_toggled_callback(GtkAction *action, gpointer data)
 	    gtk_action_set_sensitive(action, 1);
 	    }
 }
+
 
 void Set_timestamp(gboolean timestamp)
 {
@@ -667,7 +716,7 @@ void create_main_window(void)
 
 	/* send hex char box (hidden when not in use) */
 	Hex_Box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	label = gtk_label_new(_("Hexadecimal data to send (separator : ';' or space) : "));
+	label = gtk_label_new(_("Hexadecimal data to send (separator: ';' or space): "));
 	gtk_box_pack_start(GTK_BOX(Hex_Box), label, FALSE, FALSE, 5);
 	hex_send_entry = gtk_entry_new();
 	g_signal_connect(GTK_WIDGET(hex_send_entry), "activate", (GCallback)Send_Hexadecimal, NULL);
@@ -730,7 +779,7 @@ void initialize_hexadecimal_display(void)
 	blank_data[bytes_per_line * 3 + 5] = 0;
 }
 
-void put_hexadecimal(gchar *string, guint size)
+void put_hexadecimal(const gchar *string, guint size)
 {
 	static gchar data[128];
 	static gchar data_byte[6];
@@ -798,7 +847,7 @@ void put_hexadecimal(gchar *string, guint size)
 	}
 }
 
-void put_text(gchar *string, guint size)
+void put_text(const gchar *string, guint size)
 {
 	log_chars(string, size);
 	vte_terminal_feed(VTE_TERMINAL(display), string, size);
@@ -812,7 +861,7 @@ gint send_serial(gchar *string, gint len)
 	if(bytes_written > 0)
 	{
 		if(echo_on)
-			put_chars(string, bytes_written, crlfauto_on, newline_on, creturn_on);
+			put_chars(string, bytes_written, crlfauto_on, esc_clear_screen_on, newline_on, creturn_on);
 	}
 
 	return bytes_written;
@@ -838,7 +887,7 @@ void help_about_callback(GtkAction *action, gpointer data)
 	gchar *authors[] = {"Julien Schimtt", "Zach Davis", "Florian Euchner", "Stephan Enderlein",
 			    "Kevin Picot", NULL};
 	gchar *comments_program = _("GTKTerm is a simple GTK+ terminal used to communicate with the serial port.");
-	gchar *comments[256];
+	gchar comments[256];
 	GError *error = NULL;
 	GdkPixbuf *logo = NULL;
 

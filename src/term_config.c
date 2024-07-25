@@ -52,6 +52,7 @@
 
 
 #define DEVICE_NUMBERS_TO_CHECK 12
+#define CONFIGURATION_FILENAME ".gtktermrc"
 
 gchar *devices_to_check[] =
 {
@@ -81,6 +82,8 @@ gint *rts_time_before_tx;
 gint *rts_time_after_tx;
 gint *echo;
 gint *crlfauto;
+gint *autoreconnect_enabled;
+gint *esc_clear_screen;
 gint *newline;
 gint *creturn;
 gint *timestamp;
@@ -118,6 +121,8 @@ cfgStruct cfg[] =
 	{"crlfauto", CFG_BOOL, &crlfauto},
 	{"newline", CFG_BOOL, &newline},
 	{"creturn", CFG_BOOL, &creturn},
+	{"autoreconnect_enabled", CFG_BOOL, &autoreconnect_enabled},
+	{"esc_clear_screen", CFG_BOOL, &esc_clear_screen},
 	{"timestamp", CFG_BOOL, &timestamp},
 	{"font", CFG_STRING, &font},
 	{"macros", CFG_STRING_LIST, &macro_list},
@@ -137,7 +142,7 @@ cfgStruct cfg[] =
 	{NULL, CFG_END, NULL}
 };
 
-gchar *config_file;
+GFile *config_file;
 
 struct configuration_port config;
 display_config_t term_conf;
@@ -164,11 +169,29 @@ static void scrollback_set(GtkAdjustment *, gpointer);
 
 extern GtkWidget *display;
 
+void config_file_init(void)
+{
+	/*
+	 * Old location of configuration file was $HOME/.gtktermrc
+	 * New location is $XDG_CONFIG_HOME/.gtktermrc
+	 *
+	 * If configuration file exists at new location, use that one.
+	 * Otherwise, if file exists at old location, move file to new location.
+	 */
+	GFile *config_file_old = g_file_new_build_filename(getenv("HOME"), CONFIGURATION_FILENAME, NULL);
+	config_file = g_file_new_build_filename(g_get_user_config_dir(), CONFIGURATION_FILENAME, NULL);
+
+	if (!g_file_query_exists(config_file, NULL) && g_file_query_exists(config_file_old, NULL))
+		g_file_move(config_file_old, config_file, G_FILE_COPY_NONE, NULL, NULL, NULL, NULL);
+}
+
 void ConfigFlags(void)
 {
 	Set_crlfauto(config.crlfauto);
 	Set_newline(config.newline);
 	Set_creturn(config.creturn);
+	Set_autoreconnect_enabled(config.autoreconnect_enabled);
+	Set_esc_clear_screen(config.esc_clear_screen);
 	Set_timestamp(config.timestamp);
 }
 
@@ -203,7 +226,7 @@ void Config_Port_Fenetre(GtkAction *action, gpointer data)
 		show_message(_("No serial devices found!\n"
 		               "\n"
 		               "Searched the following device path patterns:\n"
-		               "\t/dev/ttyS*\n\t/dev/tts/*\n\t/dev/ttyUSB*\n\t/dev/usb/tts/*\n\n"
+		               "\t/dev/ttyS*\n\t/dev/tts/*\n\t/dev/ttyUSB*\n\t/dev/ttyACM*\n\t/dev/usb/tts/*\n\n"
 		               "Enter a different device path in the 'Port' box.\n"), MSG_WRN);
 	}
 
@@ -280,6 +303,7 @@ void Config_Port_Fenetre(GtkAction *action, gpointer data)
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(Combo), "576000");
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(Combo), "921600");
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(Combo), "1000000");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(Combo), "1500000");
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(Combo), "2000000");
 
 	/* set the current choice to the previous setting */
@@ -503,7 +527,7 @@ void Config_Port_Fenetre(GtkAction *action, gpointer data)
 	gtk_box_pack_start(GTK_BOX(action_area), Bouton_OK, FALSE, TRUE, 0);
 	g_signal_connect(GTK_WIDGET(Bouton_OK), "clicked", G_CALLBACK(Lis_Config), (gpointer)Combos);
 	g_signal_connect_swapped(GTK_WIDGET(Bouton_OK), "clicked", G_CALLBACK(gtk_widget_destroy), GTK_WIDGET(Dialogue));
-	Bouton_annule = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	Bouton_annule = gtk_button_new_with_label(_("Cancel"));
 	g_signal_connect_swapped(GTK_WIDGET(Bouton_annule), "clicked", G_CALLBACK(gtk_widget_destroy), GTK_WIDGET(Dialogue));
 	gtk_box_pack_start(GTK_BOX(action_area), Bouton_annule, FALSE, TRUE, 0);
 
@@ -597,7 +621,7 @@ void clear_scrollback(void){
 void read_font_button(GtkFontButton *fontButton)
 {
 	g_free(term_conf.font);
-	term_conf.font = g_strdup(gtk_font_button_get_font_name(fontButton));
+	term_conf.font = g_strdup(gtk_font_chooser_get_font(GTK_FONT_CHOOSER(fontButton)));
 
 	if(term_conf.font != NULL)
 		vte_terminal_set_font(VTE_TERMINAL(display), pango_font_description_from_string(term_conf.font));
@@ -642,7 +666,7 @@ void Select_config(gchar *title, void *callback)
 
 	/* Parse the config file */
 
-	max = cfgParse(config_file, cfg, CFG_INI);
+	max = cfgParse(g_file_get_path(config_file), cfg, CFG_INI);
 
 	if(max == -1)
 	{
@@ -657,9 +681,9 @@ void Select_config(gchar *title, void *callback)
 		dialog = gtk_dialog_new_with_buttons (title,
 		                                      NULL,
 		                                      GTK_DIALOG_DESTROY_WITH_PARENT,
-		                                      GTK_STOCK_CANCEL,
+		                                      "_Cancel",
 		                                      GTK_RESPONSE_NONE,
-		                                      GTK_STOCK_OK,
+		                                      "_OK",
 		                                      GTK_RESPONSE_ACCEPT,
 		                                      NULL);
 
@@ -722,9 +746,9 @@ void Save_config_file(void)
 	dialog = gtk_dialog_new_with_buttons (_("Save configuration"),
 	                                      NULL,
 	                                      GTK_DIALOG_DESTROY_WITH_PARENT,
-	                                      GTK_STOCK_CANCEL,
+	                                      "_Cancel",
 	                                      GTK_RESPONSE_NONE,
-	                                      GTK_STOCK_OK,
+	                                      "_OK",
 	                                      GTK_RESPONSE_ACCEPT,
 	                                      NULL);
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG(dialog));
@@ -761,7 +785,7 @@ void really_save_config(GtkDialog *Fenetre, gint id, gpointer data)
 
 	if(id == GTK_RESPONSE_ACCEPT)
 	{
-		max = cfgParse(config_file, cfg, CFG_INI);
+		max = cfgParse(g_file_get_path(config_file), cfg, CFG_INI);
 
 		if(max == -1)
 		{
@@ -783,12 +807,12 @@ void really_save_config(GtkDialog *Fenetre, gint id, gpointer data)
 		}
 		else
 		{
-			if(remove_section(config_file, (char *)data) == -1)
+			if(remove_section(g_file_get_path(config_file), (char *)data) == -1)
 			{
 				show_message(_("Cannot overwrite section!"), MSG_ERR);
 				return;
 			}
-			if(max == cfgParse(config_file, cfg, CFG_INI))
+			if(max == cfgParse(g_file_get_path(config_file), cfg, CFG_INI))
 			{
 				show_message(_("Cannot read configuration file!"), MSG_ERR);
 				return;
@@ -798,7 +822,7 @@ void really_save_config(GtkDialog *Fenetre, gint id, gpointer data)
 		}
 
 		Copy_configuration(cfg_num);
-		cfgDump(config_file, cfg, CFG_INI, max);
+		cfgDump(g_file_get_path(config_file), cfg, CFG_INI, max);
 
 		string = g_strdup_printf(_("Configuration [%s] saved\n"), (char *)data);
 		show_message(string, MSG_WRN);
@@ -815,7 +839,7 @@ void save_config(GtkDialog *Fenetre, gint id, GtkWidget *edit)
 
 	if(id == GTK_RESPONSE_ACCEPT)
 	{
-		max = cfgParse(config_file, cfg, CFG_INI);
+		max = cfgParse(g_file_get_path(config_file), cfg, CFG_INI);
 
 		if(max == -1)
 		{
@@ -838,9 +862,9 @@ void save_config(GtkDialog *Fenetre, gint id, GtkWidget *edit)
 				                 config_name);
 
 				gtk_dialog_add_buttons(GTK_DIALOG(message_dialog),
-				                       GTK_STOCK_CANCEL,
+				                       "_Cancel",
 				                       GTK_RESPONSE_NONE,
-				                       GTK_STOCK_YES,
+				                       "_Yes",
 				                       GTK_RESPONSE_ACCEPT,
 				                       NULL);
 
@@ -893,7 +917,7 @@ void delete_config(GtkDialog *Fenetre, gint id, GtkTreeSelection *Selection_List
 		if(gtk_tree_selection_get_selected(Selection_Liste, &Modele, &iter))
 		{
 			gtk_tree_model_get(GTK_TREE_MODEL(Modele), &iter, 0, (gint *)&txt, -1);
-			if(remove_section(config_file, txt) == -1)
+			if(remove_section(g_file_get_path(config_file), txt) == -1)
 				show_message(_("Cannot delete section!"), MSG_ERR);
 		}
 	}
@@ -907,7 +931,7 @@ gint Load_configuration_from_file(gchar *config_name)
 	macro_t *macros = NULL;
 	cfgList *t;
 
-	max = cfgParse(config_file, cfg, CFG_INI);
+	max = cfgParse(g_file_get_path(config_file), cfg, CFG_INI);
 
 	if(max == -1)
 	{
@@ -972,16 +996,26 @@ gint Load_configuration_from_file(gchar *config_name)
 				else
 					config.crlfauto = FALSE;
 
-                if(newline[i] != -1)
+				 if(newline[i] != -1)
 					config.newline = (gboolean)newline[i];
 				else
 					config.newline = FALSE;
 
-                if(creturn[i] != -1)
+				 if(creturn[i] != -1)
 					config.creturn = (gboolean)creturn[i];
 				else
 					config.creturn = FALSE;
 					
+				if(autoreconnect_enabled[i] != -1)
+					config.autoreconnect_enabled = (gboolean)autoreconnect_enabled[i];
+				else
+					config.autoreconnect_enabled = FALSE;
+
+				if(esc_clear_screen[i] != -1)
+					config.esc_clear_screen = (gboolean)esc_clear_screen[i];
+				else
+					config.esc_clear_screen = FALSE;
+
 				if(timestamp[i] != -1)
 					config.timestamp = (gboolean)timestamp[i];
 				else
@@ -1170,7 +1204,7 @@ gint Check_configuration_file(void)
 	gchar *string = NULL;
 
 	/* is configuration file present ? */
-	if(stat(config_file, &my_stat) == 0)
+	if(stat(g_file_get_path(config_file), &my_stat) == 0)
 	{
 		/* If bad configuration file, fallback to _hardcoded_ defaults! */
 		if(Load_configuration_from_file("default") == -1)
@@ -1183,12 +1217,12 @@ gint Check_configuration_file(void)
 	/* if not, create it, with the [default] section */
 	else
 	{
-		string = g_strdup_printf(_("Configuration file (%s) with\n[default] configuration has been created.\n"), config_file);
+		string = g_strdup_printf(_("Configuration file (%s) with\n[default] configuration has been created.\n"), g_file_get_path(config_file));
 		show_message(string, MSG_WRN);
 		cfgAllocForNewSection(cfg, "default");
 		Hard_default_configuration();
 		Copy_configuration(0);
-		cfgDump(config_file, cfg, CFG_INI, 1);
+		cfgDump(g_file_get_path(config_file), cfg, CFG_INI, 1);
 		g_free(string);
 	}
 	return 0;
@@ -1210,6 +1244,8 @@ void Hard_default_configuration(void)
 	config.crlfauto = FALSE;
 	config.newline = FALSE;
 	config.creturn = FALSE;
+	config.autoreconnect_enabled = FALSE;
+	config.esc_clear_screen = FALSE;
 	config.timestamp = FALSE;
   config.disable_port_lock = FALSE;
 
@@ -1331,7 +1367,23 @@ void Copy_configuration(int pos)
 
 	cfgStoreValue(cfg, "creturn", string, CFG_INI, pos);
 	g_free(string);
-	
+
+	if(config.autoreconnect_enabled == FALSE)
+		string = g_strdup_printf("False");
+	else
+		string = g_strdup_printf("True");
+
+	cfgStoreValue(cfg, "autoreconnect_enabled", string, CFG_INI, pos);
+	g_free(string);
+
+	if(config.esc_clear_screen == FALSE)
+		string = g_strdup_printf("False");
+	else
+		string = g_strdup_printf("True");
+
+	cfgStoreValue(cfg, "esc_clear_screen", string, CFG_INI, pos);
+	g_free(string);
+
 	if(config.timestamp == FALSE)
 		string = g_strdup_printf("False");
 	else
@@ -1496,7 +1548,7 @@ void Config_Terminal(GtkAction *action, gpointer data)
 
 	GtkWidget *dialog;
 	dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog"));
-	gtk_window_set_transient_for(dialog, Fenetre);
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(Fenetre));
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Main Window"));
 
 	/** Connect signals **/
@@ -1520,13 +1572,13 @@ void Config_Terminal(GtkAction *action, gpointer data)
 	// Text color
 	GtkWidget *cfg_text_color;
 	cfg_text_color = GTK_WIDGET(gtk_builder_get_object(builder, "cfg_text_color"));
-	gtk_color_button_set_rgba(GTK_COLOR_BUTTON(cfg_text_color), &term_conf.foreground_color);
+	gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(cfg_text_color), &term_conf.foreground_color);
 	g_signal_connect(cfg_text_color, "color-set", G_CALLBACK (config_fg_color), 0);
 
 	// Background color
 	GtkWidget *cfg_background_color;
 	cfg_background_color = GTK_WIDGET(gtk_builder_get_object(builder, "cfg_background_color"));
-	gtk_color_button_set_rgba(GTK_COLOR_BUTTON(cfg_background_color), &term_conf.background_color);
+	gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(cfg_background_color), &term_conf.background_color);
 	g_signal_connect(cfg_background_color, "color-set", G_CALLBACK (config_bg_color), 0);
 
 	// Close button
@@ -1556,21 +1608,21 @@ void config_fg_color(GtkWidget *button, gpointer data)
 {
 	gchar *string;
 
-	gtk_color_button_get_rgba (GTK_COLOR_BUTTON (button), &term_conf.foreground_color);
+	gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(button), &term_conf.foreground_color);
 
 	vte_terminal_set_color_foreground (VTE_TERMINAL(display), &term_conf.foreground_color);
 	gtk_widget_queue_draw (display);
 
-	string = g_strdup_printf ("%d", term_conf.foreground_color.red);
+	string = g_strdup_printf ("%d", (gint)term_conf.foreground_color.red);
 	cfgStoreValue (cfg, "term_foreground_red", string, CFG_INI, 0);
 	g_free (string);
-	string = g_strdup_printf ("%d", term_conf.foreground_color.green);
+	string = g_strdup_printf ("%d", (gint)term_conf.foreground_color.green);
 	cfgStoreValue (cfg, "term_foreground_green", string, CFG_INI, 0);
 	g_free (string);
-	string = g_strdup_printf ("%d", term_conf.foreground_color.blue);
+	string = g_strdup_printf ("%d", (gint)term_conf.foreground_color.blue);
 	cfgStoreValue (cfg, "term_foreground_blue", string, CFG_INI, 0);
 	g_free (string);
-	string = g_strdup_printf ("%d", term_conf.foreground_color.alpha);
+	string = g_strdup_printf ("%d", (gint)term_conf.foreground_color.alpha);
 	cfgStoreValue (cfg, "term_foreground_alpha", string, CFG_INI, 0);
 	g_free (string);
 }
@@ -1579,21 +1631,21 @@ void config_bg_color(GtkWidget *button, gpointer data)
 {
 	gchar *string;
 
-	gtk_color_button_get_rgba (GTK_COLOR_BUTTON (button), &term_conf.background_color);
+	gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(button), &term_conf.background_color);
 
 	vte_terminal_set_color_background (VTE_TERMINAL(display), &term_conf.background_color);
 	gtk_widget_queue_draw (display);
 
-	string = g_strdup_printf ("%d", term_conf.background_color.red);
+	string = g_strdup_printf ("%d", (gint)term_conf.background_color.red);
 	cfgStoreValue (cfg, "term_background_red", string, CFG_INI, 0);
 	g_free (string);
-	string = g_strdup_printf ("%d", term_conf.background_color.green);
+	string = g_strdup_printf ("%d", (gint)term_conf.background_color.green);
 	cfgStoreValue (cfg, "term_background_green", string, CFG_INI, 0);
 	g_free (string);
-	string = g_strdup_printf ("%d", term_conf.background_color.blue);
+	string = g_strdup_printf ("%d", (gint)term_conf.background_color.blue);
 	cfgStoreValue (cfg, "term_background_blue", string, CFG_INI, 0);
 	g_free (string);
-	string = g_strdup_printf ("%d", term_conf.background_color.alpha);
+	string = g_strdup_printf ("%d", (gint)term_conf.background_color.alpha);
 	cfgStoreValue (cfg, "term_background_alpha", string, CFG_INI, 0);
 	g_free (string);
 }

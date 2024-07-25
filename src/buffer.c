@@ -86,7 +86,7 @@ unsigned int insert_timestamp(char *buffer)
   return size;
 }
 
-void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolean newline, gboolean creturn)
+void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolean esc_clear_screen, gboolean newline, gboolean creturn)
 {
 	// buffer must still be valid after cr conversion or adding timestamp
 	// only pointer is copied below
@@ -95,13 +95,13 @@ void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolea
     int insert;
     int insert2;
 	/* If the auto CR LF mode on, read the buffer to add \r before \n */
-	if(crlf_auto || timestamp_on || newline || creturn)
+	if(crlf_auto || timestamp_on || esc_clear_screen || newline || creturn)
 	{
 		int i, out_size = 0;
 
 		for (i=0; i<size; i++)
 		{
-		if(newline)
+				if(newline)
 			{
 				if (chars[i] == '\r')
 				{
@@ -126,7 +126,12 @@ void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolea
 
 			}  //if creturn
 
-      if(crlf_auto)
+			if(esc_clear_screen && chars[i] == '\x1b')
+			{
+				clear_buffer();
+				continue;
+			}
+			if(crlf_auto)
 			{
 				if (chars[i] == '\r')
 				{
@@ -197,11 +202,11 @@ void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolea
 		// converted newline characters
 		chars = out_buffer;
 		size = out_size;
-	} // if(crlf_auto || timestamp_on)
+	} // if(crlf_auto || timestamp_on || esc_clear_screen)
 
 	if(buffer == NULL)
 	{
-		i18n_printf(_("ERROR : Buffer is not initialized !\n"));
+		i18n_printf(_("ERROR: Buffer is not initialized!\n"));
 		return;
 	}
 

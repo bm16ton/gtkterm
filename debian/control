@@ -3,17 +3,17 @@ Section: comm
 Priority: optional
 Rules-Requires-Root: no
 Maintainer: Willem van den Akker <wvdakker@wilsoft.nl>
-Build-Depends: debhelper-compat (= 12),
+Build-Depends: debhelper-compat (= 13),
  meson,
  libgudev-1.0-dev,
  libgtk-3-dev,
  libvte-2.91-dev,
  intltool,
  libxml2-utils
-Standards-Version: 4.5.1
+Standards-Version: 4.7.0
 Vcs-Browser: https://salsa.debian.org/debian/gtkterm
 Vcs-Git: https://salsa.debian.org/debian/gtkterm.git
-Homepage: https://github.com/Jeija/gtkterm
+Homepage: https://github.com/wvdakker/gtkterm
 
 Package: gtkterm
 Architecture: any

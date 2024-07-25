@@ -23,12 +23,16 @@
 
 void create_main_window(void);
 void Set_status_message(gchar *);
-void put_text(gchar *, guint);
-void put_hexadecimal(gchar *, guint);
+void put_text(const gchar *, guint);
+void put_hexadecimal(const gchar *, guint);
 void Set_local_echo(gboolean);
 void show_message(gchar *, gint);
 void clear_display(void);
 void set_view(guint);
+void Set_crlfauto(gboolean crlfauto);
+void Set_autoreconnect_enabled(gboolean autoreconnect_enabled);
+void Set_esc_clear_screen(gboolean esc_clear_screen);
+void Set_timestamp(gboolean timestamp);
 gint send_serial(gchar *, gint);
 void Put_temp_message(const gchar *, gint);
 void Set_window_title(gchar *msg);

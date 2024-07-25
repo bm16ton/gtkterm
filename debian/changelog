@@ -1,12 +1,30 @@
-gtkterm (1.1.5-16) unstable; urgency=medium
+gtkterm (1.3.1-16) unstable; urgency=medium
 
-  * New upstream release;
-    - added apply button to settings
-    - added two new options for line return/newline
+  [ Willem van den Akker ]
+  * New release (compile fix)
+  * New upstream release. (Closes: #1066645, #1071239).
+  * debian/control
+    - bump standards to 4.7.0. No changes needed.
+    - update homepage url
 
- -- Ben Maddocksr <bm16ton@gmail.com>  Sun, 03 Jul 2023 12:52:59 +0100
+  [ Debian Janitor ]
+  * Bump debhelper from old 12 to 13.
+  * Set upstream metadata fields: Bug-Database, Bug-Submit, Repository,
+    Repository-Browse.
+  * Remove deprecated Encoding key from desktop file debian/gtkterm.desktop.
 
-gtkterm (1.1.1-16) unstable; urgency=medium
+ -- Boyuan Yang <byang@debian.org>  Fri, 17 May 2024 06:34:31 -0400
+
+gtkterm (1.2.1-1) unstable; urgency=medium
+
+  * Upgrade to 3.0 source format. (Closes: #1007580).
+  * debian/watch: Update watchfile
+  * debian/control: Update Standard to 4.6.1 (no changes needed).
+  * New upstream version 1.2.1
+
+ -- Willem van den Akker <wvdakker@wilsoft.nl>  Wed, 06 Jul 2022 19:20:16 +0200
+
+gtkterm (1.1.1-1) unstable; urgency=medium
 
   * New upstream release;
   * debian/control

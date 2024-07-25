@@ -33,9 +33,10 @@ extern struct configuration_port config;
 
 static inline void device_monitor_status(const bool connected)
 {
-	if (connected)
-		interface_open_port();
-	else
+	if (connected) {
+		if (config.autoreconnect_enabled)
+			interface_open_port();
+	} else
 		interface_close_port();
 }
 
