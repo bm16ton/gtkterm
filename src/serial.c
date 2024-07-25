@@ -204,6 +204,9 @@ gboolean Config_port(void)
 	case 57600:
 		termios_p.c_cflag = B57600;
 		break;
+//	case 74880:
+//		termios_p.c_cflag = B74880;
+//		break;
 	case 115200:
 		termios_p.c_cflag = B115200;
 		break;

@@ -1154,6 +1154,7 @@ void Verify_configuration(void)
 	case 19200:
 	case 38400:
 	case 57600:
+	case 74880:
 	case 115200:
 	case 230400:
 	case 460800:
