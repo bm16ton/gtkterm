@@ -131,7 +131,7 @@ void put_chars(const char *chars, unsigned int size, gboolean crlf_auto, gboolea
 			}
 			if(crlf_auto)
 			{
-				if (chars[i] == '\r')             
+				if (chars[i] == '\r')
 				{
 					/* If the previous character was a CR too, insert a newline */
 					if (cr_received)

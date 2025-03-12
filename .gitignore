@@ -1,0 +1,6 @@
+*~
+build
+debian/.debhelper
+debian/.debhelper/*
+debian/gtkterm
+debian/gtkterm/*

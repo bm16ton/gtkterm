@@ -1,5 +1,14 @@
 gtkterm (1.3.1-16) unstable; urgency=medium
 
+  [ Ben Maddocks ]
+  * Allow custom baud rates
+  * Add buffered send
+  * Add ability to turn off control pins
+  * Add seperate settings to enable or disable NL and CR
+  * Add apply to settings window
+  
+gtkterm (1.3.1-0) unstable; urgency=medium
+
   [ Willem van den Akker ]
   * New release (compile fix)
   * New upstream release. (Closes: #1066645, #1071239).

@@ -66,6 +66,7 @@ gchar *devices_to_check[] =
 	"/dev/ttyBLE%d",
 	"/dev/ttyBmpGdb%d",
 	"/dev/ttyBmpTarg%d",
+	"/dev/ttyHS%d",
 	NULL
 };
 
@@ -337,8 +338,8 @@ void Config_Port_Fenetre(GtkAction *action, gpointer data)
 		gtk_combo_box_set_active(GTK_COMBO_BOX(Combo), 8);
 		break;
 	case 74880:
-	    gtk_combo_box_set_active(GTK_COMBO_BOX(Combo), 9);
-	    break;
+		gtk_combo_box_set_active(GTK_COMBO_BOX(Combo), 9);
+		break;
 	case 115200:
 		gtk_combo_box_set_active(GTK_COMBO_BOX(Combo), 10);
 		break;

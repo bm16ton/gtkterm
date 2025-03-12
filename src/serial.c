@@ -21,12 +21,12 @@
 
 #include <gtk/gtk.h>
 #include <glib.h>
+#include <sys/ioctl.h>
 #include <termios.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
-#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/file.h>
@@ -47,6 +47,7 @@
 
 #ifdef HAVE_LINUX_SERIAL_H
 #include <linux/serial.h>
+//#include <asm/termbits.h>
 #endif
 
 
@@ -234,8 +235,9 @@ gboolean Config_port(void)
 
 	default:
 #ifdef HAVE_LINUX_SERIAL_H
-		set_custom_speed(config.vitesse, serial_port_fd);
-		termios_p.c_cflag |= B38400;
+	termios_p.c_cflag &= ~CBAUD;
+	termios_p.c_cflag |= CBAUDEX;  
+	cfsetspeed(&termios_p, config.vitesse);
 #else
 		Close_port();
 		msg = g_strdup_printf(_("Arbitrary baud rates not supported"));
@@ -272,7 +274,7 @@ gboolean Config_port(void)
 		break;
 	}
 	if(config.stops == 2)
-		termios_p.c_cflag |= CSTOPB;
+	termios_p.c_cflag |= CSTOPB;
 	termios_p.c_cflag |= CREAD;
 	termios_p.c_iflag = IGNPAR | IGNBRK;
 	switch(config.flux)
@@ -458,42 +460,6 @@ void sendbreak(void)
 	else
 		tcsendbreak(serial_port_fd, 0);
 }
-
-#ifdef HAVE_LINUX_SERIAL_H
-gint set_custom_speed(int speed, int port_fd)
-{
-
-	struct serial_struct ser;
-	int arby;
-
-	ioctl(port_fd, TIOCGSERIAL, &ser);
-	ser.custom_divisor = ser.baud_base / speed;
-	if(!(ser.custom_divisor))
-		ser.custom_divisor = 1;
-
-	arby = ser.baud_base / ser.custom_divisor;
-	ser.flags &= ~ASYNC_SPD_MASK;
-	ser.flags |= ASYNC_SPD_CUST;
-
-	ioctl(port_fd, TIOCSSERIAL, &ser);
-
- /*
-	 int fd = open(port_fd, O_RDONLY);
-    struct termios2 tio;
-    ioctl(fd, TCGETS2, &tio);
-    tio.c_cflag &= ~CBAUD;
-    tio.c_cflag |= BOTHER;
-    tio.c_ispeed = speed;
-    tio.c_ospeed = speed;
-    int r = ioctl(fd, TCSETS2, &tio);
-    close(fd);
-        if (r == 0) {
-        i18n_perror(_("Control signals read"));
-    }
-*/
-	return 0;
-}
-#endif
 
 gchar* get_port_string(void)
 {

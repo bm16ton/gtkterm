@@ -29,7 +29,6 @@ void configure_creturn(gboolean);
 void configure_autoreconnect_enable(gboolean);
 void configure_esc_clear_screen(gboolean);
 void sendbreak(void);
-gint set_custom_speed(int, int);
 gchar* get_port_string(void);
 
 #define BUFFER_RECEPTION 8192
